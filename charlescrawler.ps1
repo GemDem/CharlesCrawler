@@ -100,7 +100,7 @@ $Worker = {
 		$words = "pass", "credential", "mot de passe", "DOMAIN\\", "@domain.local", "mdp"
 		$name = "*password*", "*mdp*", "*mot de passe*", "*code*", "*secret*", "*cred*"
 	}
-
+	
 	if ($share_list -Match $Server)
 	{
 		for ($i = 7; $i -lt $share_list.Count-2; $i++) { 
@@ -108,11 +108,12 @@ $Worker = {
 			&{
 				if($mode -eq "file")
 				{
-					Get-ChildItem "\\$($Server)\$($share)\" -recurse -include $ext | Select-String $words -List | Tee-Object -FilePath .\match_in_files_$pipelinePassIn.txt -Append | Write-host
+					Get-ChildItem "\\$($Server)\$($share)\" -recurse -include $ext | Select-String $words -List | Tee-Object -FilePath $outputPath"\"$Server".txt" -Append | Write-host
 				}
 				else
 				{
-					Get-ChildItem "\\$($Server)\$($share)\" -recurse -include $name | select -ExpandProperty FullName | Tee-Object -FilePath $outputPath"\"$Server -Append | Write-host
+					
+					Get-ChildItem "\\$($Server)\$($share)\" -recurse -include $name | select -ExpandProperty FullName | Tee-Object -FilePath $outputPath"\"$Server".txt" -Append | Write-host
 				}
 			} 2> $null
 		}
