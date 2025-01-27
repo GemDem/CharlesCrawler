@@ -77,7 +77,7 @@ if ($quick) {
     Write-Host "[*] Quick mode enabled" -ForegroundColor Blue
 }
 
-# todo : add xlsx/pptx/msg support
+# todo : add xlsx/pptx support
 # todo : everything is saved in hashtable = big memory usage ?
 # todo : the save in file during the scan is not up to date
 
@@ -88,9 +88,9 @@ if ($quick) {
 # Initialize search filters
 
 $ext = @(
-    "*.bat", "*.ps1", "*.sh", "*.txt", "*.conf", "*.init", "*.json", "*.docx"
+    "*.bat", "*.ps1", "*.sh", "*.txt", "*.conf", "*.init", "*.json", "*.docx", "*.msg"
     if (-not $quick) {
-        "*.cnf", "*.config", "*.xml", "*.yaml", "*.inf", "*.url", "*.ini", "*.yml", "*.cfg", "*.one", "*.docx"
+        "*.cnf", "*.config", "*.xml", "*.yaml", "*.inf", "*.url", "*.ini", "*.yml", "*.cfg", "*.one", "*.docx", "*.msg"
     }
 )
 
@@ -332,6 +332,15 @@ $shareEnumerationServerJobs = $serverShares.Keys | ForEach-Object -ThrottleLimit
 
         $fileMatcherScriptBlock = {
             $matchedLine = $_.Line
+
+            # Decode quoted-printable if file is .msg
+            if ($_.Path -like "*.msg") {
+                $matchedLine = $matchedLine -replace '=\r?\n', ''
+                $matchedLine = [regex]::Replace($matchedLine, '=([0-9A-F]{2})', {
+                    param($match)
+                    [char][convert]::ToInt32($match.Groups[1].Value, 16)
+                })
+            }
 
             foreach($word in $using:words) {
                 $matchedLine = $matchedLine -replace "($word)", "¤`$1¤"
